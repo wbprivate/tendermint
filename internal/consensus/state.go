@@ -2483,7 +2483,9 @@ func repairWalFile(src, dst string) error {
 }
 
 func (cs *State) calculateProposalTimestampDifferenceMetric() {
-	cs.metrics.ProposalTimestampDifference.Observe(cs.ProposalReceiveTime.Sub(cs.Proposal.Timestamp).Seconds())
+	if cs.Proposal.POLRound == -1 {
+		cs.metrics.ProposalTimestampDifference.Observe(cs.ProposalReceiveTime.Sub(cs.Proposal.Timestamp).Seconds())
+	}
 }
 
 // proposerWaitTime determines how long the proposer should wait to propose its next block.
