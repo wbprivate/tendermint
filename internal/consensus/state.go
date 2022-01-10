@@ -2484,7 +2484,7 @@ func repairWalFile(src, dst string) error {
 
 func (cs *State) calculateProposalTimestampDifferenceMetric() {
 	if cs.Proposal.POLRound == -1 {
-		cs.metrics.ProposalTimestampDifference.Observe(cs.ProposalReceiveTime.Sub(cs.Proposal.Timestamp).Seconds())
+		cs.metrics.ProposalTimestampDifference.Observe(cs.Proposal.Timestamp.Sub(cs.ProposalReceiveTime).Seconds())
 	}
 }
 
