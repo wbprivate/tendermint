@@ -2483,8 +2483,15 @@ func repairWalFile(src, dst string) error {
 }
 
 func (cs *State) calculateProposalTimestampDifferenceMetric() {
-	if cs.Proposal.POLRound == -1 {
-		cs.metrics.ProposalTimestampDifference.Observe(cs.Proposal.Timestamp.Sub(cs.ProposalReceiveTime).Seconds())
+	if cs.Proposal != nil && cs.Proposal.POLRound == -1 {
+		tp := types.TimingParams{
+			Precision:    cs.state.ConsensusParams.Timing.Precision,
+			MessageDelay: cs.state.ConsensusParams.Timing.MessageDelay,
+		}
+
+		isTimely := cs.Proposal.IsTimely(cs.ProposalReceiveTime, tp, cs.state.InitialHeight)
+		cs.metrics.ProposalTimestampDifference.With("is_timely", fmt.Sprintf("%t", isTimely)).
+			Observe(cs.Proposal.Timestamp.Sub(cs.ProposalReceiveTime).Seconds())
 	}
 }
 

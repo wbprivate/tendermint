@@ -209,7 +209,7 @@ func PrometheusMetrics(namespace string, labelsAndValues ...string) *Metrics {
 				"message and the local time when the message was received. " +
 				"Only calculated when a new block is proposed.",
 			Buckets: []float64{-15, -3, -1, -.5, 0, .100, 1, 5, 8, 15},
-		}, labels).With(labelsAndValues...),
+		}, append(labels, "is_timely")).With(labelsAndValues...),
 	}
 }
 
