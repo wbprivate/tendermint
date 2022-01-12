@@ -132,6 +132,8 @@ func (blockExec *BlockExecutor) ApplyBlock(
 	state State, blockID types.BlockID, block *types.Block,
 ) (State, int64, error) {
 
+	blockExec.logger.Error("apply block", "tx size", len(block.Txs), "timestamp", time.Now().Unix())
+
 	if err := validateBlock(state, block); err != nil {
 		return state, 0, ErrInvalidBlock(err)
 	}
