@@ -818,8 +818,8 @@ func (cs *State) handleMsg(mi msgInfo) {
 	case *BlockPartMessage:
 		// if the proposal is complete, we'll enterPrevote or tryFinalizeCommit
 		added, err = cs.addProposalBlockPart(msg, peerID)
-		cs.Logger.Error("added block part", "value", added, "msghash", msg.Part.Proof)
 		if added {
+			cs.Logger.Error("added block part", "value", added, "msghash", msg.Part.Proof)
 			cs.statsMsgQueue <- mi
 		}
 
