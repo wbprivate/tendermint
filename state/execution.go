@@ -242,6 +242,9 @@ func (blockExec *BlockExecutor) Commit(
 	)
 
 	// Update mempool.
+
+	blockExec.logger.Info("mempool update begin", "time", time.Now().UTC())
+
 	err = blockExec.mempool.Update(
 		block.Height,
 		block.Txs,
@@ -249,6 +252,7 @@ func (blockExec *BlockExecutor) Commit(
 		TxPreCheck(state),
 		TxPostCheck(state),
 	)
+	blockExec.logger.Info("mempool update end", "time", time.Now().UTC())
 
 	return res.Data, res.RetainHeight, err
 }
