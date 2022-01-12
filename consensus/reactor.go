@@ -533,9 +533,9 @@ OUTER_LOOP:
 
 				blockMeta := conR.conS.blockStore.LoadBlockMeta(prs.Height)
 				if blockMeta == nil {
-					heightLogger.Error("Failed to load block meta",
+					heightLogger.Debug("Failed to load block meta",
 						"blockstoreBase", blockStoreBase, "blockstoreHeight", conR.conS.blockStore.Height())
-					panic("failed to load block meta")
+					continue OUTER_LOOP
 				}
 				var i uint32
 				for i = 0; i < blockMeta.BlockID.PartSetHeader.Total; i++ {
