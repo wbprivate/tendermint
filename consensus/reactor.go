@@ -661,8 +661,6 @@ func (conR *Reactor) gossipDataForCatchup(logger log.Logger, rs *cstypes.RoundSt
 		if prs.Height < conR.conS.Height-4 {
 			conR.gossipDataRetryCounter++
 			if conR.gossipDataRetryCounter%2 == 0 {
-				conR.Logger.Error("data retry counter", "value", conR.gossipDataRetryCounter)
-				conR.Logger.Error("propsal block", "value", prs.ProposalBlockParts == nil)
 			}
 		}
 	}
