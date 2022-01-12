@@ -496,6 +496,9 @@ func (conR *Reactor) sendNewRoundStepMessage(peer p2p.Peer) {
 func (conR *Reactor) gossipDataRoutine(peer p2p.Peer, ps *PeerState) {
 	logger := conR.Logger.With("peer", peer)
 
+	var lastSawHeight int64
+	lastSawHeight = 0
+
 OUTER_LOOP:
 	for {
 		// Manage disconnects from self or peer.
@@ -505,6 +508,10 @@ OUTER_LOOP:
 		}
 		rs := conR.conS.GetRoundState()
 		prs := ps.GetRoundState()
+
+		if lastSawHeight < prs.Height {
+			lastSawHeight = prs.Height
+		}
 
 		// Send proposal Block parts?
 		if rs.ProposalBlockParts.HasHeader(prs.ProposalBlockPartSetHeader) {
@@ -527,13 +534,15 @@ OUTER_LOOP:
 			//Resend Data
 			if prs.Height < conR.conS.Height-4 {
 				conR.gossipDataRetryCounter = 0
+
+				// prs.Height may equals 0
 				heightLogger := logger.With("height", prs.Height)
 				// If the peer is on a previous height that we have, help catch up.
 				blockStoreBase := conR.conS.blockStore.Base()
-
 				blockMeta := conR.conS.blockStore.LoadBlockMeta(prs.Height)
+				conR.Logger.Error("prs.height", "value", prs.Height)
+				conR.Logger.Error("last saw height", "value", lastSawHeight)
 				if blockMeta == nil {
-					conR.Logger.Error("prs.Height", "value", prs.Height)
 					heightLogger.Debug("Failed to load block meta",
 						"blockstoreBase", blockStoreBase, "blockstoreHeight", conR.conS.blockStore.Height())
 					continue OUTER_LOOP
