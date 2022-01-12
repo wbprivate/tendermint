@@ -584,6 +584,8 @@ func (mem *CListMempool) Update(
 		mem.postCheck = postCheck
 	}
 
+	mem.logger.Error("mempool", "size", len(txs))
+
 	for i, tx := range txs {
 		if deliverTxResponses[i].Code == abci.CodeTypeOK {
 			// Add valid committed tx to the cache (if missing).
@@ -613,6 +615,7 @@ func (mem *CListMempool) Update(
 	if mem.Size() > 0 {
 		if mem.config.Recheck {
 			mem.logger.Debug("recheck txs", "numtxs", mem.Size(), "height", height)
+			mem.logger.Error("recheck txs", "numtxs", mem.Size(), "height", height)
 			mem.recheckTxs()
 			// At this point, mem.txs are being rechecked.
 			// mem.recheckCursor re-scans mem.txs and possibly removes some txs.
@@ -633,7 +636,6 @@ func (mem *CListMempool) recheckTxs() {
 		panic("recheckTxs is called, but the mempool is empty")
 	}
 
-	mem.logger.Error("mempool size", "value", mem.Size())
 	mem.recheckCursor = mem.txs.Front()
 	mem.recheckEnd = mem.txs.Back()
 
