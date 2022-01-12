@@ -818,19 +818,13 @@ func (cs *State) handleMsg(mi msgInfo) {
 	case *BlockPartMessage:
 		// if the proposal is complete, we'll enterPrevote or tryFinalizeCommit
 		added, err = cs.addProposalBlockPart(msg, peerID)
-		cs.Logger.Error("added block part?", "value", added)
+		cs.Logger.Error("added block part", "value", added, "msghash", msg.Part.Proof)
 		if added {
 			cs.statsMsgQueue <- mi
 		}
 
 		if err != nil && msg.Round != cs.Round {
 			cs.Logger.Debug(
-				"received block part from wrong round",
-				"height", cs.Height,
-				"cs_round", cs.Round,
-				"block_round", msg.Round,
-			)
-			cs.Logger.Error(
 				"received block part from wrong round",
 				"height", cs.Height,
 				"cs_round", cs.Round,
