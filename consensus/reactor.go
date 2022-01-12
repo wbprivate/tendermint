@@ -245,8 +245,6 @@ func (conR *Reactor) Receive(chID byte, src p2p.Peer, msgBytes []byte) {
 		return
 	}
 
-	conR.Logger.Error("Receive", "src", src, "chId", chID, "msg", msg)
-
 	// Get peer states
 	ps, ok := src.Get(types.PeerStateKey).(*PeerState)
 	if !ok {
@@ -321,6 +319,7 @@ func (conR *Reactor) Receive(chID byte, src p2p.Peer, msgBytes []byte) {
 			ps.SetHasProposalBlockPart(msg.Height, msg.Round, int(msg.Part.Index))
 			conR.Metrics.BlockParts.With("peer_id", string(src.ID())).Add(1)
 			conR.Logger.Error("we have received new block part message from another peers")
+			conR.Logger.Error("Receive", "src", src, "chId", chID, "msg", msg)
 			conR.conS.peerMsgQueue <- msgInfo{msg, src.ID()}
 		default:
 			conR.Logger.Error(fmt.Sprintf("Unknown message type %v", reflect.TypeOf(msg)))
