@@ -662,6 +662,9 @@ func (conR *Reactor) gossipDataForCatchup(logger log.Logger, rs *cstypes.RoundSt
 		//We only in this sence to plus the retry counter
 		if prs.Height < conR.conS.Height-4 {
 			conR.gossipDataRetryCounter++
+			if conR.gossipDataRetryCounter/10 == 0 {
+				conR.Logger.Error("data retry counter", "value", conR.gossipDataRetryCounter)
+			}
 		}
 	}
 	//  logger.Info("No parts to send in catch-up, sleeping")
