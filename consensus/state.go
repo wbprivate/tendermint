@@ -829,6 +829,12 @@ func (cs *State) handleMsg(mi msgInfo) {
 				"cs_round", cs.Round,
 				"block_round", msg.Round,
 			)
+			cs.Logger.Error(
+				"received block part from wrong round",
+				"height", cs.Height,
+				"cs_round", cs.Round,
+				"block_round", msg.Round,
+			)
 			err = nil
 		}
 
@@ -1842,6 +1848,13 @@ func (cs *State) addProposalBlockPart(msg *BlockPartMessage, peerID p2p.ID) (add
 		// NOTE: this can happen when we've gone to a higher round and
 		// then receive parts from the previous round - not necessarily a bad peer.
 		cs.Logger.Debug(
+			"received a block part when we are not expecting any",
+			"height", height,
+			"round", round,
+			"index", part.Index,
+			"peer", peerID,
+		)
+		cs.Logger.Error(
 			"received a block part when we are not expecting any",
 			"height", height,
 			"round", round,
