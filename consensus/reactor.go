@@ -538,8 +538,6 @@ OUTER_LOOP:
 				// If the peer is on a previous height that we have, help catch up.
 				blockStoreBase := conR.conS.blockStore.Base()
 				blockMeta := conR.conS.blockStore.LoadBlockMeta(prs.Height)
-				conR.Logger.Error("gossip data retry", "prs.Height", prs.Height,
-					"lastSawHeight", lastSawHeight, "peer ID", peer.ID())
 				if blockMeta == nil {
 					heightLogger.Debug("Failed to load block meta",
 						"blockstoreBase", blockStoreBase, "blockstoreHeight", conR.conS.blockStore.Height())
