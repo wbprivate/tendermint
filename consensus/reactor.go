@@ -546,7 +546,7 @@ OUTER_LOOP:
 						Part:   part,
 					}
 					peer.Send(DataChannel, MustEncode(msg))
-					conR.Logger.Error("we are sending history block...")
+					conR.Logger.Debug("we are sending history block...")
 				}
 				continue OUTER_LOOP
 			}
@@ -662,8 +662,8 @@ func (conR *Reactor) gossipDataForCatchup(logger log.Logger, rs *cstypes.RoundSt
 		//We only in this sence to plus the retry counter
 		if prs.Height < conR.conS.Height-4 {
 			conR.gossipDataRetryCounter++
-			if conR.gossipDataRetryCounter/10 == 0 {
-				conR.Logger.Error("data retry counter", "value", conR.gossipDataRetryCounter)
+			if conR.gossipDataRetryCounter/100 == 0 {
+				conR.Logger.Debug("data retry counter", "value", conR.gossipDataRetryCounter)
 			}
 		}
 	}
