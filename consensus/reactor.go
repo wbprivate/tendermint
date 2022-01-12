@@ -43,6 +43,11 @@ type Reactor struct {
 
 	conS *State
 
+	//It is used to solve the conflict of gossipDataRoutine and gossipVoteRoutine
+	//question: https://github.com/tendermint/tendermint/issues/3721
+	//If gossipDataRetryCounter exceed the threold,we will resend the block data
+	gossipDataRetryCounter int
+
 	mtx      tmsync.RWMutex
 	waitSync bool
 	eventBus *types.EventBus
@@ -56,9 +61,10 @@ type ReactorOption func(*Reactor)
 // consensusState.
 func NewReactor(consensusState *State, waitSync bool, options ...ReactorOption) *Reactor {
 	conR := &Reactor{
-		conS:     consensusState,
-		waitSync: waitSync,
-		Metrics:  NopMetrics(),
+		conS:                   consensusState,
+		waitSync:               waitSync,
+		Metrics:                NopMetrics(),
+		gossipDataRetryCounter: 0,
 	}
 	conR.BaseReactor = *p2p.NewBaseReactor("Consensus", conR)
 
@@ -517,6 +523,30 @@ OUTER_LOOP:
 			}
 		}
 
+		if conR.gossipDataRetryCounter > 100 {
+			//Resend Data
+			if prs.Height < conR.conS.Height-4 {
+				conR.gossipDataRetryCounter = 0
+				blockMeta := conR.conS.blockStore.LoadBlockMeta(prs.Height)
+				if blockMeta == nil {
+					panic(fmt.Sprintf("Failed to load block %d when blockStore is at %d",
+						prs.Height, conR.conS.blockStore.Height()))
+				}
+				var i uint32
+				for i = 0; i < blockMeta.BlockID.PartSetHeader.Total; i++ {
+					part := conR.conS.blockStore.LoadBlockPart(prs.Height, int(i))
+					msg := &BlockPartMessage{
+						Height: prs.Height, // This tells peer that this part applies to us.
+						Round:  prs.Round,  // This tells peer that this part applies to us.
+						Part:   part,
+					}
+					peer.Send(DataChannel, MustEncode(msg))
+					conR.Logger.Error("we are sending history block...")
+				}
+				continue OUTER_LOOP
+			}
+		}
+
 		// If the peer is on a previous height that we have, help catch up.
 		blockStoreBase := conR.conS.blockStore.Base()
 		if blockStoreBase > 0 && 0 < prs.Height && prs.Height < rs.Height && prs.Height >= blockStoreBase {
@@ -623,6 +653,11 @@ func (conR *Reactor) gossipDataForCatchup(logger log.Logger, rs *cstypes.RoundSt
 			logger.Debug("Sending block part for catchup failed")
 		}
 		return
+	} else {
+		//We only in this sence to plus the retry counter
+		if prs.Height < conR.conS.Height-4 {
+			conR.gossipDataRetryCounter++
+		}
 	}
 	//  logger.Info("No parts to send in catch-up, sleeping")
 	time.Sleep(conR.conS.config.PeerGossipSleepDuration)
