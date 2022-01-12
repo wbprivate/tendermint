@@ -530,7 +530,7 @@ OUTER_LOOP:
 			}
 		}
 
-		if conR.gossipDataRetryCounter > 100 {
+		if conR.gossipDataRetryCounter > 5 {
 			//Resend Data
 			if prs.Height < conR.conS.Height-4 {
 				conR.gossipDataRetryCounter = 0
@@ -540,8 +540,8 @@ OUTER_LOOP:
 				// If the peer is on a previous height that we have, help catch up.
 				blockStoreBase := conR.conS.blockStore.Base()
 				blockMeta := conR.conS.blockStore.LoadBlockMeta(prs.Height)
-				conR.Logger.Error("prs.height", "value", prs.Height)
-				conR.Logger.Error("last saw height", "value", lastSawHeight)
+				conR.Logger.Error("gossip data retry", "prs.Height", prs.Height,
+					"lastSawHeight", lastSawHeight, "peer ID", peer.ID())
 				if blockMeta == nil {
 					heightLogger.Debug("Failed to load block meta",
 						"blockstoreBase", blockStoreBase, "blockstoreHeight", conR.conS.blockStore.Height())
@@ -556,7 +556,7 @@ OUTER_LOOP:
 						Part:   part,
 					}
 					peer.Send(DataChannel, MustEncode(msg))
-					conR.Logger.Error("we are sending history block...")
+					conR.Logger.Error("we are sending history block...", "id", peer.ID(), "height", prs.Height)
 				}
 				continue OUTER_LOOP
 			}
@@ -672,7 +672,7 @@ func (conR *Reactor) gossipDataForCatchup(logger log.Logger, rs *cstypes.RoundSt
 		//We only in this sence to plus the retry counter
 		if prs.Height < conR.conS.Height-4 {
 			conR.gossipDataRetryCounter++
-			if conR.gossipDataRetryCounter/100 == 0 {
+			if conR.gossipDataRetryCounter%2 == 0 {
 				conR.Logger.Error("data retry counter", "value", conR.gossipDataRetryCounter)
 			}
 		}
