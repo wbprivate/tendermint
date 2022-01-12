@@ -533,6 +533,7 @@ OUTER_LOOP:
 
 				blockMeta := conR.conS.blockStore.LoadBlockMeta(prs.Height)
 				if blockMeta == nil {
+					conR.Logger.Error("prs.Height", "value", prs.Height)
 					heightLogger.Debug("Failed to load block meta",
 						"blockstoreBase", blockStoreBase, "blockstoreHeight", conR.conS.blockStore.Height())
 					continue OUTER_LOOP
@@ -546,7 +547,7 @@ OUTER_LOOP:
 						Part:   part,
 					}
 					peer.Send(DataChannel, MustEncode(msg))
-					conR.Logger.Debug("we are sending history block...")
+					conR.Logger.Error("we are sending history block...")
 				}
 				continue OUTER_LOOP
 			}
@@ -663,7 +664,7 @@ func (conR *Reactor) gossipDataForCatchup(logger log.Logger, rs *cstypes.RoundSt
 		if prs.Height < conR.conS.Height-4 {
 			conR.gossipDataRetryCounter++
 			if conR.gossipDataRetryCounter/100 == 0 {
-				conR.Logger.Debug("data retry counter", "value", conR.gossipDataRetryCounter)
+				conR.Logger.Error("data retry counter", "value", conR.gossipDataRetryCounter)
 			}
 		}
 	}
