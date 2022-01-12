@@ -818,6 +818,7 @@ func (cs *State) handleMsg(mi msgInfo) {
 	case *BlockPartMessage:
 		// if the proposal is complete, we'll enterPrevote or tryFinalizeCommit
 		added, err = cs.addProposalBlockPart(msg, peerID)
+		cs.Logger.Error("added block part?", "value", added)
 		if added {
 			cs.statsMsgQueue <- mi
 		}
@@ -1072,7 +1073,9 @@ func (cs *State) enterPropose(height int64, round int32) {
 	}()
 
 	// If we don't get the proposal and all block parts quick enough, enterPrevote
+	cs.Logger.Info("schedulte propose begin", "value", cs.config.Propose(round))
 	cs.scheduleTimeout(cs.config.Propose(round), height, round, cstypes.RoundStepPropose)
+	cs.Logger.Info("schedulte propose end", "value", cs.config.Propose(round))
 
 	// Nothing more to do if we're not a validator
 	if cs.privValidator == nil {
@@ -1678,7 +1681,13 @@ func (cs *State) finalizeCommit(height int64) {
 
 	// cs.StartTime is already set.
 	// Schedule Round0 to start soon.
+	cs.Logger.Error("schedule begin", "cs.StartTime", cs.StartTime,
+		"tmTime.Now", tmtime.Now(),
+		"time out", cs.StartTime.Sub(tmtime.Now()))
 	cs.scheduleRound0(&cs.RoundState)
+	cs.Logger.Error("schedule end", "cs.StartTime", cs.StartTime,
+		"tmTime.Now", tmtime.Now(),
+		"time out", cs.StartTime.Sub(tmtime.Now()))
 
 	// By here,
 	// * cs.Height has been increment to height+1
