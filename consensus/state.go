@@ -2122,6 +2122,13 @@ func (cs *State) addVote(vote *types.Vote, peerID p2p.ID) (added bool, err error
 			"vote_timestamp", vote.Timestamp,
 			"data", precommits.LogString())
 
+		cs.Logger.Debug("added by wenbin, to monitor the validators size",
+			"height", vote.Height,
+			"round", vote.Round,
+			"validator", vote.ValidatorAddress.String(),
+			"vote_timestamp", vote.Timestamp,
+			"data", precommits.LogString())
+
 		blockID, ok := precommits.TwoThirdsMajority()
 		if ok {
 			// Executed as TwoThirdsMajority could be from a higher round
