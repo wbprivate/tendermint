@@ -547,17 +547,8 @@ OUTER_LOOP:
 						"blockstoreBase", blockStoreBase, "blockstoreHeight", conR.conS.blockStore.Height())
 					continue OUTER_LOOP
 				}
-				var i uint32
-				for i = 0; i < blockMeta.BlockID.PartSetHeader.Total; i++ {
-					part := conR.conS.blockStore.LoadBlockPart(prs.Height, int(i))
-					msg := &BlockPartMessage{
-						Height: prs.Height, // This tells peer that this part applies to us.
-						Round:  prs.Round,  // This tells peer that this part applies to us.
-						Part:   part,
-					}
-					peer.Send(DataChannel, MustEncode(msg))
-					conR.Logger.Error("we are sending history block...", "id", peer.ID(), "height", prs.Height)
-				}
+				ps.InitProposalBlockParts(blockMeta.BlockID.PartSetHeader)
+				conR.gossipDataForCatchup(heightLogger, rs, prs, ps, peer)
 				continue OUTER_LOOP
 			}
 		}
@@ -661,11 +652,11 @@ func (conR *Reactor) gossipDataForCatchup(logger log.Logger, rs *cstypes.RoundSt
 			Round:  prs.Round,  // Not our height, so it doesn't matter.
 			Part:   part,
 		}
-		logger.Debug("Sending block part for catchup", "round", prs.Round, "index", index)
+		logger.Error("Sending block part for catchup", "round", prs.Round, "index", index)
 		if peer.Send(DataChannel, MustEncode(msg)) {
 			ps.SetHasProposalBlockPart(prs.Height, prs.Round, index)
 		} else {
-			logger.Debug("Sending block part for catchup failed")
+			logger.Error("Sending block part for catchup failed")
 		}
 		return
 	} else {
@@ -674,6 +665,7 @@ func (conR *Reactor) gossipDataForCatchup(logger log.Logger, rs *cstypes.RoundSt
 			conR.gossipDataRetryCounter++
 			if conR.gossipDataRetryCounter%2 == 0 {
 				conR.Logger.Error("data retry counter", "value", conR.gossipDataRetryCounter)
+				conR.Logger.Error("propsal block", "value", prs.ProposalBlockParts == nil)
 			}
 		}
 	}
