@@ -653,6 +653,7 @@ func (conR *Reactor) gossipDataForCatchup(logger log.Logger, rs *cstypes.RoundSt
 			Part:   part,
 		}
 		logger.Error("Sending block part for catchup", "round", prs.Round, "index", index)
+		logger.Error("sending block msg for catchup", "value", MustEncode(msg))
 		if peer.Send(DataChannel, MustEncode(msg)) {
 			ps.SetHasProposalBlockPart(prs.Height, prs.Round, index)
 		} else {
