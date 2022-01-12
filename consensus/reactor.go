@@ -527,10 +527,15 @@ OUTER_LOOP:
 			//Resend Data
 			if prs.Height < conR.conS.Height-4 {
 				conR.gossipDataRetryCounter = 0
+				heightLogger := logger.With("height", prs.Height)
+				// If the peer is on a previous height that we have, help catch up.
+				blockStoreBase := conR.conS.blockStore.Base()
+
 				blockMeta := conR.conS.blockStore.LoadBlockMeta(prs.Height)
 				if blockMeta == nil {
-					panic(fmt.Sprintf("Failed to load block %d when blockStore is at %d",
-						prs.Height, conR.conS.blockStore.Height()))
+					heightLogger.Error("Failed to load block meta",
+						"blockstoreBase", blockStoreBase, "blockstoreHeight", conR.conS.blockStore.Height())
+					panic("failed to load block meta")
 				}
 				var i uint32
 				for i = 0; i < blockMeta.BlockID.PartSetHeader.Total; i++ {
