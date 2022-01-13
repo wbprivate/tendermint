@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"sync"
 	"sync/atomic"
+	"time"
 
 	abci "github.com/tendermint/tendermint/abci/types"
 	cfg "github.com/tendermint/tendermint/config"
@@ -613,7 +614,10 @@ func (mem *CListMempool) Update(
 	if mem.Size() > 0 {
 		if mem.config.Recheck {
 			mem.logger.Debug("recheck txs", "numtxs", mem.Size(), "height", height)
+
+			mem.logger.Error("recheck begin", "numtxs", mem.Size(), "timestamp", time.Now().Unix(), "timestamp-milli", time.Now().UnixMilli()%1000)
 			mem.recheckTxs()
+			mem.logger.Error("recheck end", "numtxs", mem.Size(), "timestamp", time.Now().Unix(), "timestamp-milli", time.Now().UnixMilli()%1000)
 			// At this point, mem.txs are being rechecked.
 			// mem.recheckCursor re-scans mem.txs and possibly removes some txs.
 			// Before mem.Reap(), we should wait for mem.recheckCursor to be nil.
