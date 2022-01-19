@@ -182,7 +182,7 @@ func (blockExec *BlockExecutor) ApplyBlock(
 		return state, 0, fmt.Errorf("commit failed for application: %v", err)
 	}
 
-	blockExec.logger.Error("commit end", "timestamp", time.Now().UnixMilli())
+	blockExec.logger.Error("executed block end", "commit timestamp", time.Now().UnixMilli())
 
 	// Update evpool with the latest state.
 	blockExec.evpool.Update(state, block.Evidence.Evidence)
@@ -339,7 +339,7 @@ func execBlockOnProxyApp(
 		return nil, err
 	}
 
-	logger.Error("executed block end", "num_valid_txs", validTxs, "num_invalid_txs", invalidTxs)
+	logger.Error("executed block end", "endblock timestamp", time.Now().UnixMilli(), "num_valid_txs", validTxs, "num_invalid_txs", invalidTxs)
 
 	logger.Info("executed block", "height", block.Height, "num_valid_txs", validTxs, "num_invalid_txs", invalidTxs)
 	return abciResponses, nil
